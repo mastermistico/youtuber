@@ -1,0 +1,33 @@
+page-home {
+
+	  ion-card {
+    position: relative;
+    text-align: center;
+    height: 48%;
+
+    }
+
+  .card-title {
+    position: absolute;
+    top: 3%;
+    font-size: 2.0em;
+    width: 100%;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  p {
+    font-size: 1.0em;
+    position: absolute;
+    top: 22%;
+    width: 100%;
+    color: #fff;
+  }
+
+  img {
+  	width: 100%;
+  	height: 100%;
+  }
+
+
+}
