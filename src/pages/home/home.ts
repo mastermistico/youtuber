@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController,AlertController } from 'ionic-angular';
+import { NavController,AlertController,ToastController  } from 'ionic-angular';
 import { Youtube } from '../../providers/youtube';
 import {AngularFireDatabase  , FirebaseListObservable} from 'angularfire2';
 import { Observable }     from 'rxjs/Observable'; 
@@ -12,27 +12,90 @@ import { Observable }     from 'rxjs/Observable';
 })
 export class HomePage {
   
-  public rubius: FirebaseListObservable<any>;
-  public german: FirebaseListObservable<any>;
+  public rubius: any;
+  public flipped: boolean = false;
+  public german: any;
   public next: any = ''
+  public num: any;
   constructor(public navCtrl: NavController,
   			      public youtube: Youtube,
-               public alertCtrl: AlertController,
+              public alertCtrl: AlertController,
+              public toastCtrl: ToastController,
               public database: AngularFireDatabase ) {
-     this.rubius = this.database.list('/rubius');
-     this.german = this.database.list('/german');
+     //this.rubius = this.database.list('/rubius/');
+     //this.german = this.database.list('/german/videos/');
      
   }
 
     ionViewDidLoad() {
-       //this.german = 'hola'
-    //this.getyoutuber()
+
+    this.database.list('/rubius/videos/').subscribe(data => {
+          this.num = data
+          console.log(this.num.length);
+    })
+
+    this.database.list('/german/videos/').subscribe(data => {
+          this.num = data
+          console.log(this.num.length);
+    })
+
+    this.uploadVideos()
+  }
+
+  uploadVideos(){
+    this.getVideos("rubius").subscribe(data => {
+        this.rubius = data[this.randomVideo(data.length,1)]
+        console.log(this.rubius)
+        /*console.log(this.randomVideo(this.rubius.length,1))
+        console.log(this.rubius[this.randomVideo(this.rubius.length,1)])
+        */
+     })
+
+    this.getVideos("german").subscribe(data => {
+      this.german = data[this.randomVideo(data.length,1)]
+    })
+
+  }
+
+  getVideos(youtuber: string) {
+
+    return  this.database.list(youtuber + '/videos/')
+
+  }
+
+  voteYoutuber(youtuber: string,key: string, votos: number){
+      this.flipped = !this.flipped;
+      console.log(youtuber,key)
+      this.presentToast(youtuber)
+      votos++
+      /*this.getVideos(youtuber).update(key, {
+        votos: votos
+      })*/
+
+      this.uploadVideos()
+      
+  }
+
+   presentToast(youtuber: string) {
+    let toast = this.toastCtrl.create({
+      message: '+1 votaste por el video de ' + youtuber ,
+      duration: 4000,
+      position: 'top'
+    });
+    toast.present();
+  }
+
+  randomVideo(max:any,min:any) {
+     let num: any;
+     num = Math.floor(Math.random() * (max - min + 1)) + min;
+     return num
   }
 
   getyoutuber(){
 
     //this.youtube.searchChannel('elrubiusOMG').subscribe(data => {
-      this.youtube.searchChannel('JuegaGerman').subscribe(data => {
+     // this.youtube.searchChannel('JuegaGerman').subscribe(data => {
+     this.youtube.searchChannel('HolaSoyGerman').subscribe(data => {  
 
         console.log("Data : " , data);
         
@@ -49,12 +112,12 @@ export class HomePage {
 
          for (var i = 0; i < data.items.length; ++i) {
              this.database.list('/german/videos').push({
-                       [data.items[i].snippet.resourceId.videoId]: 
+                       //[data.items[i].snippet.resourceId.videoId]: 
                        //hola:
-                         {title: data.items[i].snippet.title,
+                          title: data.items[i].snippet.title,
                           id:  data.items[i].snippet.resourceId.videoId,
                           image: data.items[i].snippet.thumbnails.high.url,
-                          votos: 0 }
+                          votos: 0 
                      })
          }
          
